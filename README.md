@@ -24,10 +24,10 @@ import "github.com/theodesp/go-blooms"
 
 const (
   size = 64 * 1024
-  hashFunctionsSize = 3
+  numHashValues = 3
 )
 
-bf := go_blooms.New(size, hashFunctionsSize)
+bf := go_blooms.New(size, numHashValues)
 
 value := "hello"
 

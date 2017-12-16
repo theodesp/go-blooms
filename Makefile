@@ -1,5 +1,5 @@
 # Project name
-PROJECT=go-blooms
+PROJECT=go_blooms
 
 # Check for syntax errors
 .PHONY: vet
