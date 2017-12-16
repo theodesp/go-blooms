@@ -11,8 +11,10 @@ This bloom filter implementation is backed by bool slice for simplicity.
 And the hashing functions used are fnv and murmur both 64 bit versions.
 
 ## Installation
-
+```go
 go get -u github.com/theodesp/go-blooms
+```
+
 
 ## Usage
 
@@ -25,18 +27,18 @@ const (
   hashFunctionsSize = 3
 )
 
-bf := bloomfilter.New(size, hashFunctionsSize)
+bf := go_blooms.New(size, hashFunctionsSize)
 
 value := "hello"
 
 bf.Add([]byte(value)) // we accept only a byte slice
-if bf.Test(value) { // probably true, could be false
+if bf.Test([]byte(value)) { // probably true, could be false
   // whatever
 }
 
 anotherValue := "world"
 
-if bf.Test(anotherValue) { // Bloom filter guarantees that anotherValue is not in the set
+if bf.Test([]byte(anotherValue) { // Bloom filter guarantees that anotherValue is not in the set
   panic("This should never happen")
 }
 
