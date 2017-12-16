@@ -24,3 +24,12 @@ func (s *MySuite) TestNew(c *C)  {
 	c.Assert(bf.n, Equals, uint(0))
 	c.Assert(bf.m, Equals, uint(1024))
 }
+
+// Test add to set
+func (s *MySuite) TestAdd(c *C)  {
+	bf := New(1024, 3)
+
+	bf.Add([]byte("hello"))
+
+	c.Assert(bf.n, Equals, uint(1))
+}

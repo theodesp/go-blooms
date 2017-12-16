@@ -29,6 +29,39 @@ func New(size, numHashValues uint) *BloomFilter {
 		k: numHashValues,
 		m: size,
 		n: uint(0),
-		hashfns: []hash.Hash64{murmur3.New64(), fnv.New64()},
+		hashfns: []hash.Hash64{murmur3.New64(), fnv.New64(), fnv.New64a()},
 	}
 }
+
+// Adds the item into the bloom filter set by hashing in over the hash functions
+func (bf *BloomFilter) Add(item []byte) {
+	hashes := bf.hashValues(item)
+	i := uint(0)
+
+	for {
+		if i >= bf.k {
+			break
+		}
+
+		position := uint(hashes[i]) % bf.m
+		bf.bitset[uint(position)] = true
+
+		i+= 1
+	}
+
+	bf.n += 1
+}
+
+// Calculates all the hash values by hashing in over the hash functions
+func (bf *BloomFilter) hashValues(item []byte) []uint64  {
+	var result []uint64
+
+	for _, hashFunc := range bf.hashfns {
+		hashFunc.Write(item)
+		result = append(result, hashFunc.Sum64())
+		hashFunc.Reset()
+	}
+
+	return result
+}
+
