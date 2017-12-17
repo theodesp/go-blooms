@@ -33,3 +33,32 @@ func (s *MySuite) TestAdd(c *C)  {
 
 	c.Assert(bf.n, Equals, uint(1))
 }
+
+// Test items if do not exist into set
+func (s *MySuite) TestIfNotExist(c *C)  {
+	bf := New(1024, 3)
+
+	bf.Add([]byte("hello"))
+	bf.Add([]byte("world"))
+	bf.Add([]byte("hi"))
+
+	c.Assert(bf.Test([]byte("H1")), Equals, false)
+	c.Assert(bf.Test([]byte("World")), Equals, false)
+	c.Assert(bf.Test([]byte("hell0")), Equals, false)
+}
+
+// Test items if items may exist into set
+func (s *MySuite) TestIfMayExist(c *C)  {
+	bf := New(6, 3)
+
+	bf.Add([]byte("hello"))
+	bf.Add([]byte("world"))
+	bf.Add([]byte("sir"))
+	bf.Add([]byte("madam"))
+	bf.Add([]byte("io"))
+
+	c.Assert(bf.Test([]byte("hello")), Equals, true)
+	c.Assert(bf.Test([]byte("world")), Equals, true)
+	// False negative
+	c.Assert(bf.Test([]byte("hi")), Equals, false)
+}

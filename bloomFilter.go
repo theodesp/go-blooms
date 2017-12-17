@@ -52,6 +52,29 @@ func (bf *BloomFilter) Add(item []byte) {
 	bf.n += 1
 }
 
+// Test if the item into the bloom filter is set by hashing in over the hash functions
+func (bf *BloomFilter) Test(item []byte) (exists bool) {
+	hashes := bf.hashValues(item)
+	i := uint(0)
+	exists = true
+
+	for {
+		if i >= bf.k {
+			break
+		}
+
+		position := uint(hashes[i]) % bf.m
+		if !bf.bitset[uint(position)] {
+			exists = false
+			break
+		}
+
+		i+= 1
+	}
+
+	return
+}
+
 // Calculates all the hash values by hashing in over the hash functions
 func (bf *BloomFilter) hashValues(item []byte) []uint64  {
 	var result []uint64
