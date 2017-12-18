@@ -62,3 +62,24 @@ func (s *MySuite) TestIfMayExist(c *C)  {
 	// False negative
 	c.Assert(bf.Test([]byte("hi")), Equals, false)
 }
+
+func (s *MySuite) BenchmarkAdd(c *C) {
+	bf := New(1024, 3)
+	for i := 0; i < c.N; i++ {
+		// Logic to benchmark
+		bf.Add([]byte(string(i)))
+	}
+}
+
+func (s *MySuite) BenchmarkTest(c *C) {
+	bf := New(1024, 3)
+	for i := 0; i < c.N; i++ {
+		// Logic to benchmark
+		bf.Add([]byte(string(i)))
+	}
+	c.ResetTimer()
+	for i := 0; i < c.N; i++ {
+		// Logic to benchmark
+		bf.Test([]byte(string(i)))
+	}
+}

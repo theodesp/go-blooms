@@ -67,6 +67,12 @@ The space of the actual data structure (what holds the data).
 
 Where `m` is the size of the slice.
 
+## Benchmarks
+```bash
+PASS: bloomFilter_test.go:66: MySuite.BenchmarkAdd      10000000               231 ns/op
+PASS: bloomFilter_test.go:74: MySuite.BenchmarkTest     10000000               231 ns/op
+```
+
 
 ## License
 
