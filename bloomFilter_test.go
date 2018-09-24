@@ -1,85 +1,98 @@
 package go_blooms
 
 import (
+	"hash"
+	"hash/fnv"
+	"math/rand"
 	"testing"
 
-	. "gopkg.in/check.v1"
+	"github.com/spaolacci/murmur3"
 )
 
-func Test(t *testing.T) { TestingT(t) }
-
-type MySuite struct{}
-
-var _ = Suite(&MySuite{})
-
-func (s *MySuite) TestTrue(c *C) {
-	c.Assert(true, Equals, true)
-}
-
-// Basic init test
-func (s *MySuite) TestNew(c *C)  {
-	bf := New(1024, 3)
-
-	c.Assert(bf.k, Equals, uint(3))
-	c.Assert(bf.n, Equals, uint(0))
-	c.Assert(bf.m, Equals, uint(1024))
-}
-
-// Test add to set
-func (s *MySuite) TestAdd(c *C)  {
-	bf := New(1024, 3)
-
-	bf.Add([]byte("hello"))
-
-	c.Assert(bf.n, Equals, uint(1))
-}
-
-// Test items if do not exist into set
-func (s *MySuite) TestIfNotExist(c *C)  {
-	bf := New(1024, 3)
-
-	bf.Add([]byte("hello"))
-	bf.Add([]byte("world"))
-	bf.Add([]byte("hi"))
-
-	c.Assert(bf.Test([]byte("H1")), Equals, false)
-	c.Assert(bf.Test([]byte("World")), Equals, false)
-	c.Assert(bf.Test([]byte("hell0")), Equals, false)
-}
+// 1 Million
+var memberSize uint = 1000000
 
 // Test items if items may exist into set
-func (s *MySuite) TestIfMayExist(c *C)  {
-	bf := New(6, 3)
+func TestExistance(t *testing.T) {
+	bf := New(memberSize, DefaultHashFunctions)
 
-	bf.Add([]byte("hello"))
-	bf.Add([]byte("world"))
-	bf.Add([]byte("sir"))
-	bf.Add([]byte("madam"))
-	bf.Add([]byte("io"))
+	for i := 0; i < 1000; i++ {
+		item := randomBytes(rand.Intn(54) + 10)
 
-	c.Assert(bf.Test([]byte("hello")), Equals, true)
-	c.Assert(bf.Test([]byte("world")), Equals, true)
-	// False negative
-	c.Assert(bf.Test([]byte("hi")), Equals, false)
+		bf.Add(item)
+
+		if bf.Test(item) != true {
+			t.Errorf("'%q' not found", item)
+		}
+
+		// Now lets create some items that don't exist
+		item2 := append(item, randomBytes(rand.Intn(54)+10)...)
+
+		// Test that item does NOT exist
+		if bf.Test(item2) == true {
+			t.Errorf("'%q' should not be found", item2)
+		}
+	}
 }
 
-func (s *MySuite) BenchmarkAdd(c *C) {
-	bf := New(1024, 3)
-	for i := 0; i < c.N; i++ {
+func BenchmarkAdd(b *testing.B) {
+	bf := New(memberSize, DefaultHashFunctions)
+	for i := 0; i < b.N; i++ {
 		// Logic to benchmark
 		bf.Add([]byte(string(i)))
 	}
 }
 
-func (s *MySuite) BenchmarkTest(c *C) {
-	bf := New(1024, 3)
-	for i := 0; i < c.N; i++ {
+func BenchmarkTest(b *testing.B) {
+	bf := New(memberSize, DefaultHashFunctions)
+	for i := 0; i < b.N; i++ {
 		// Logic to benchmark
 		bf.Add([]byte(string(i)))
 	}
-	c.ResetTimer()
-	for i := 0; i < c.N; i++ {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
 		// Logic to benchmark
 		bf.Test([]byte(string(i)))
 	}
+}
+
+func BenchmarkSearch(b *testing.B) {
+	bf := New(memberSize, DefaultHashFunctions)
+	for i := 0; i < b.N; i++ {
+		// Logic to benchmark
+		bf.Add([]byte(string(i) + " foo bar baz"))
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// Logic to benchmark
+		bf.Test([]byte(string(i) + " foo baz"))
+	}
+}
+
+func BenchmarkHashFunctions(b *testing.B) {
+	item := []byte("hello world, how are you doing?")
+
+	hashFns := map[string]hash.Hash64{
+		"murmur3": murmur3.New64(),
+		"fnv64":   fnv.New64(),
+		"fnv64a":  fnv.New64a(),
+	}
+
+	for name, hashFunc := range hashFns {
+		b.Run(name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				hashFunc.Write(item)
+				use(hashFunc.Sum64())
+				hashFunc.Reset()
+			}
+		})
+	}
+}
+
+func use(interface{}) {}
+
+func randomBytes(size int) []byte {
+	b := make([]byte, size)
+	rand.Read(b)
+	return b
 }
