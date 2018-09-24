@@ -1,7 +1,6 @@
 package go_blooms
 
 import (
-	"fmt"
 	"hash"
 	"hash/fnv"
 	"math/rand"
@@ -11,15 +10,18 @@ import (
 	"github.com/spaolacci/murmur3"
 )
 
-// 1 Million
-var memberSize uint = 1000000
+// 100 Million
+var memberSize uint = 100000000
+
+// 100 Thousand
+var sampleSize int = 100000
 
 // Test items if items may exist into set
 func TestExistance(t *testing.T) {
 	bf := New(memberSize, DefaultHashFunctions)
 
-	for i := 0; i < 1000; i++ {
-		item := randomBytes(rand.Intn(54) + 10)
+	for i := 0; i < sampleSize; i++ {
+		item := randomBytes(10)
 
 		bf.Add(item)
 
@@ -28,7 +30,7 @@ func TestExistance(t *testing.T) {
 		}
 
 		// Now lets create some items that don't exist
-		item2 := append(item, randomBytes(rand.Intn(54)+10)...)
+		item2 := append(item, randomBytes(10)...)
 
 		// Test that item does NOT exist
 		if bf.Test(item2) == true {
@@ -40,45 +42,25 @@ func TestExistance(t *testing.T) {
 func BenchmarkAdd(b *testing.B) {
 	bf := New(memberSize, DefaultHashFunctions)
 	for i := 0; i < b.N; i++ {
-		// Logic to benchmark
-		bf.Add([]byte(string(i)))
+		bf.Add(randomBytes(10))
 	}
 }
 
 func BenchmarkTest(b *testing.B) {
 	bf := New(memberSize, DefaultHashFunctions)
 	for i := 0; i < b.N; i++ {
-		// Logic to benchmark
-		bf.Add([]byte(string(i)))
+		bf.Add(randomBytes(10))
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		// Logic to benchmark
-		bf.Test([]byte(string(i)))
-	}
-}
-
-func BenchmarkSearch(b *testing.B) {
-	bf := New(memberSize, DefaultHashFunctions)
-	for i := 0; i < b.N; i++ {
-		// Logic to benchmark
-		bf.Add([]byte(string(i) + " foo bar baz"))
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		// Logic to benchmark
-		bf.Test([]byte(string(i) + " foo baz"))
+		bf.Test(randomBytes(10))
 	}
 }
 
 // Compare with a binary sort to make sure we're in the same ballpark
 func BenchmarkBinarySearch(b *testing.B) {
-	randomString := func() string {
-		return fmt.Sprintf("%q", randomBytes(20))
-	}
-
 	var strings []string
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < sampleSize; i++ {
 		item := randomString()
 		strings = append(strings, item)
 	}
@@ -120,4 +102,8 @@ func randomBytes(size int) []byte {
 	b := make([]byte, size)
 	rand.Read(b)
 	return b
+}
+
+func randomString() string {
+	return string(randomBytes(10))
 }
