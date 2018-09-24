@@ -1,9 +1,11 @@
 package go_blooms
 
 import (
+	"fmt"
 	"hash"
 	"hash/fnv"
 	"math/rand"
+	"sort"
 	"testing"
 
 	"github.com/spaolacci/murmur3"
@@ -66,6 +68,29 @@ func BenchmarkSearch(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		// Logic to benchmark
 		bf.Test([]byte(string(i) + " foo baz"))
+	}
+}
+
+// Compare with a binary sort to make sure we're in the same ballpark
+func BenchmarkBinarySearch(b *testing.B) {
+	randomString := func() string {
+		return fmt.Sprintf("%q", randomBytes(20))
+	}
+
+	var strings []string
+	for i := 0; i < 100000; i++ {
+		item := randomString()
+		strings = append(strings, item)
+	}
+
+	// Sort by byte order
+	sort.Strings(strings)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		item := randomString()
+		use(sort.SearchStrings(strings, item))
 	}
 }
 
