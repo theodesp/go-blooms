@@ -2,8 +2,8 @@ go-blooms
 ---
 
 From Wiki
->Bloom Filter: A space-efficient probabilistic data structure that is used to test whether an element is a member of 
-a set. False positive matches are possible, but false negatives are not; i.e. a query returns either "possibly in set" 
+>Bloom Filter: A space-efficient probabilistic data structure that is used to test whether an element is a member of
+a set. False positive matches are possible, but false negatives are not; i.e. a query returns either "possibly in set"
 or "definitely not in set". Elements can be added to the set, but not removed.
 
 This bloom filter implementation is backed by bool slice for simplicity.
@@ -24,10 +24,9 @@ import "github.com/theodesp/go-blooms"
 
 const (
   size = 64 * 1024
-  numHashValues = 3
 )
 
-bf := go_blooms.New(size, numHashValues)
+bf := go_blooms.New(size, go_blooms.DefaultHashFunctions)
 
 value := "hello"
 
@@ -48,9 +47,9 @@ if bf.Test([]byte(anotherValue) { // Bloom filter guarantees that anotherValue i
 
 **Time**
 
-If we are using a bloom filter with  bits and  hash function, 
-insertion and search will both take  time. 
-In both cases, we just need to run the input through all of 
+If we are using a bloom filter with  bits and  hash function,
+insertion and search will both take  time.
+In both cases, we just need to run the input through all of
 the hash functions. Then we just check the output bits.
 
 |  Operation | Complexity  |
